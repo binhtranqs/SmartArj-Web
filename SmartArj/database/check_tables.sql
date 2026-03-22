@@ -1,0 +1,33 @@
+-- Kiểm tra tất cả các bảng trong database
+USE SmartArj_PRJSEM;
+GO
+
+PRINT '=== DANH SÁCH TẤT CẢ CÁC BẢNG ===';
+SELECT 
+    TABLE_SCHEMA,
+    TABLE_NAME,
+    TABLE_TYPE
+FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_TYPE = 'BASE TABLE'
+ORDER BY TABLE_NAME;
+GO
+
+PRINT '';
+PRINT '=== KIỂM TRA BẢNG CITIES ===';
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Cities')
+BEGIN
+    PRINT '✅ Bảng Cities TỒN TẠI';
+    SELECT 
+        COLUMN_NAME,
+        DATA_TYPE,
+        IS_NULLABLE,
+        CHARACTER_MAXIMUM_LENGTH
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_NAME = 'Cities'
+    ORDER BY ORDINAL_POSITION;
+END
+ELSE
+BEGIN
+    PRINT '❌ Bảng Cities KHÔNG TỒN TẠI - CẦN TẠO BẢNG NÀY!';
+END
+GO

@@ -1,0 +1,12 @@
+/build/
+/dist/
+/target/
+
+nbproject/private/
+nbbuild/
+nbdist/
+
+*.log
+*.class
+.DS_Store
+.env
