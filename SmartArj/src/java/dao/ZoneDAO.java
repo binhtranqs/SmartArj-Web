@@ -141,7 +141,7 @@ public class ZoneDAO {
                 "    z.ZoneID, z.ZoneName, z.Latitude, z.Longitude, \n" +
                 "    c.CityName, \n" +
                 "    cr.CropName, cr.MinTemp, cr.MaxTemp,\n" +
-                "    w.Temperature, w.Humidity, w.WindSpeed, w.Rainfall, w.RecordedAt, \n" +
+                "    w.Temperature, w.Humidity, w.Wind, w.Rainfall, w.RecordedAt, \n" +
                 "    (SELECT COUNT(*) FROM Alerts a WHERE a.ZoneID = z.ZoneID AND a.IsRead = 0) as AlertCount\n" +
                 "FROM Zones z\n" +
                 "LEFT JOIN Cities c ON z.CityID = c.CityID\n" +
@@ -262,7 +262,7 @@ public class ZoneDAO {
                 "    z.ZoneID, z.ZoneName, z.Latitude, z.Longitude, \n" +
                 "    c.CityName, \n" +
                 "    cr.CropName, cr.MinTemp, cr.MaxTemp,\n" +
-                "    w.Temperature, w.Humidity, w.WindSpeed, w.Rainfall, w.RecordedAt, \n" +
+                "    w.Temperature, w.Humidity, w.Wind, w.Rainfall, w.RecordedAt, \n" +
                 "    (SELECT COUNT(*) FROM Alerts a WHERE a.ZoneID = z.ZoneID AND a.IsRead = 0) as AlertCount\n" +
                 "FROM Zones z\n" +
                 "LEFT JOIN Cities c ON z.CityID = c.CityID\n" +
