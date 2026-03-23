@@ -12,10 +12,10 @@ public class CropCatalog {
     @Column(name = "CropCatalogID")
     private Integer cropCatalogId;
 
-    @Column(name = "CropName", nullable = false, columnDefinition = "NVARCHAR(100)")
+    @Column(name = "CropName", nullable = false, length = 100)
     private String cropName;
 
-    @Column(name = "Category", nullable = false, columnDefinition = "NVARCHAR(50)")
+    @Column(name = "Category", nullable = false, length = 50)
     private String category;
 
     @Column(name = "MinTemp")
@@ -30,10 +30,10 @@ public class CropCatalog {
     @Column(name = "MaxHumid")
     private Double maxHumid;
 
-    @Column(name = "ImageUrl", columnDefinition = "NVARCHAR(500)")
+    @Column(name = "ImageUrl", length = 500)
     private String imageUrl;
 
-    @Column(name = "Description", columnDefinition = "NVARCHAR(500)")
+    @Column(name = "Description", length = 500)
     private String description;
 
     @Column(name = "IsSystemProvided", nullable = false)

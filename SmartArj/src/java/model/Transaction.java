@@ -38,7 +38,7 @@ public class Transaction {
     @Column(name = "VIPDuration")
     private Integer vipDuration; // Số ngày VIP (30, 90, 365)
 
-    @Column(name = "Description", columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "Description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "ProviderTxnRef", length = 64)

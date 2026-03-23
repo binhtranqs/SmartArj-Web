@@ -20,7 +20,7 @@ public class Zone {
     @Column(name = "OwnerID")
     private Integer ownerId;
 
-    @Column(name = "ZoneName", columnDefinition = "NVARCHAR(100)")
+    @Column(name = "ZoneName", length = 100)
     private String zoneName;
 
     @Column(name = "Latitude")
@@ -29,7 +29,7 @@ public class Zone {
     @Column(name = "Longitude")
     private Double longitude;
 
-    @Column(name = "Description", columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "Description", columnDefinition = "TEXT")
     private String description;
 
     public Zone() {

@@ -21,11 +21,11 @@ public class ChatLog {
     @Column(name = "ZoneID")
     private Integer zoneId;
 
-    @Column(name = "Message", columnDefinition = "NVARCHAR(500)")
+    @Column(name = "Message", length = 500)
     private String message;
 
     /** Intent matched: WEATHER_BY_DATE, CROPS, FALLBACK_AI, GREETING, HELP, v.v. */
-    @Column(name = "Intent", columnDefinition = "NVARCHAR(60)")
+    @Column(name = "Intent", length = 60)
     private String intent;
 
     @Column(name = "WasDbAnswer", nullable = false)

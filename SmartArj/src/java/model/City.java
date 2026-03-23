@@ -15,10 +15,10 @@ public class City {
     @Column(name = "CityID")
     private Integer cityId;
 
-    @Column(name = "CityName", nullable = false, columnDefinition = "NVARCHAR(100)")
+    @Column(name = "CityName", nullable = false, length = 100)
     private String cityName;
 
-    @Column(name = "Region", columnDefinition = "NVARCHAR(100)")
+    @Column(name = "Region", length = 100)
     private String region;
 
     @Column(name = "Latitude")
