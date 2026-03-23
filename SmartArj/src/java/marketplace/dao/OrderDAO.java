@@ -159,7 +159,7 @@ public class OrderDAO {
      * Cập nhật trạng thái order
      */
     public boolean updateStatus(int orderId, String status, int actorId) {
-        String sql = "UPDATE Orders SET Status=?, UpdatedAt=GETDATE() WHERE OrderID=? AND (BuyerID=? OR FarmerID=?)";
+        String sql = "UPDATE Orders SET Status=?, UpdatedAt=CURRENT_TIMESTAMP WHERE OrderID=? AND (BuyerID=? OR FarmerID=?)";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
@@ -179,9 +179,9 @@ public class OrderDAO {
     public boolean updatePaymentStatus(int orderId, String paymentStatus, String vnpTxnRef) {
         String sql;
         if (vnpTxnRef != null) {
-            sql = "UPDATE Orders SET PaymentStatus=?, VnpTxnRef=?, UpdatedAt=GETDATE() WHERE OrderID=?";
+            sql = "UPDATE Orders SET PaymentStatus=?, VnpTxnRef=?, UpdatedAt=CURRENT_TIMESTAMP WHERE OrderID=?";
         } else {
-            sql = "UPDATE Orders SET PaymentStatus=?, UpdatedAt=GETDATE() WHERE OrderID=?";
+            sql = "UPDATE Orders SET PaymentStatus=?, UpdatedAt=CURRENT_TIMESTAMP WHERE OrderID=?";
         }
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -203,7 +203,7 @@ public class OrderDAO {
      * Tổng doanh thu của farmer
      */
     public BigDecimal getTotalRevenueByFarmer(int farmerId) {
-        String sql = "SELECT ISNULL(SUM(TotalAmount),0) FROM Orders WHERE FarmerID=? AND Status='COMPLETED'";
+        String sql = "SELECT COALESCE(SUM(TotalAmount),0) FROM Orders WHERE FarmerID=? AND Status='COMPLETED'";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, farmerId);
@@ -237,7 +237,7 @@ public class OrderDAO {
      * Tổng doanh thu hệ thống
      */
     public BigDecimal getTotalRevenue() {
-        String sql = "SELECT ISNULL(SUM(TotalAmount),0) FROM Orders WHERE Status='COMPLETED'";
+        String sql = "SELECT COALESCE(SUM(TotalAmount),0) FROM Orders WHERE Status='COMPLETED'";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
@@ -251,7 +251,7 @@ public class OrderDAO {
 
     public List<OrderItem> findItemsByOrder(int orderId) {
         List<OrderItem> items = new ArrayList<>();
-        String sql = "SELECT oi.ItemID, oi.OrderID, oi.ListingID, ISNULL(l.ProductName, N'Sản phẩm đã xóa') AS ProductName, oi.Quantity, oi.UnitPrice " +
+        String sql = "SELECT oi.ItemID, oi.OrderID, oi.ListingID, COALESCE(l.ProductName, 'Sản phẩm đã xóa') AS ProductName, oi.Quantity, oi.UnitPrice " +
                 "FROM OrderItems oi " +
                 "LEFT JOIN Listings l ON oi.ListingID = l.ListingID " +
                 "WHERE oi.OrderID = ?";

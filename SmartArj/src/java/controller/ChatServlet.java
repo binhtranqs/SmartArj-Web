@@ -326,7 +326,7 @@ public class ChatServlet extends HttpServlet {
     }
 
     private String getFruitList(String userQuestion) throws Exception {
-        String cropSql = "SELECT CropName FROM CropCatalog WHERE Category LIKE N'%ăn quả%' OR Category LIKE N'%trái cây%' OR Category LIKE N'%Ăn quả%'";
+        String cropSql = "SELECT CropName FROM CropCatalog WHERE Category LIKE '%ăn quả%' OR Category LIKE '%trái cây%' OR Category LIKE '%Ăn quả%'";
         EntityManager em = JPAUtil.getEntityManager();
         java.util.List<String> fruits = new java.util.ArrayList<>();
         try {
@@ -353,8 +353,8 @@ public class ChatServlet extends HttpServlet {
     private String handleSpecificMetric(String userQuestion, Integer zoneId, String metricName) throws Exception {
         String cityName = getCityNameFromDb(zoneId);
         String sql = zoneId != null
-                ? "SELECT TOP 1 " + metricName + ", RecordedAt FROM WeatherLogs WHERE ZoneID=" + zoneId + " ORDER BY RecordedAt DESC"
-                : "SELECT TOP 1 " + metricName + ", RecordedAt FROM WeatherLogs ORDER BY RecordedAt DESC";
+                ? "SELECT " + metricName + ", RecordedAt FROM WeatherLogs WHERE ZoneID=" + zoneId + " ORDER BY RecordedAt DESC LIMIT 1"
+                : "SELECT " + metricName + ", RecordedAt FROM WeatherLogs ORDER BY RecordedAt DESC LIMIT 1";
         EntityManager em = JPAUtil.getEntityManager();
         String metricLabel = metricName.equals("Temperature") ? "nhiệt độ" : "độ ẩm";
         String unit = metricName.equals("Temperature") ? "°C" : "%";
@@ -390,8 +390,8 @@ public class ChatServlet extends HttpServlet {
         String weatherSummary = "";
 
         String weatherSql = zoneId != null
-                ? "SELECT TOP 1 Temperature, Humidity, Rainfall, Wind FROM WeatherLogs WHERE ZoneID=" + zoneId + " ORDER BY RecordedAt DESC"
-                : "SELECT TOP 1 Temperature, Humidity, Rainfall, Wind FROM WeatherLogs ORDER BY RecordedAt DESC";
+                ? "SELECT Temperature, Humidity, Rainfall, Wind FROM WeatherLogs WHERE ZoneID=" + zoneId + " ORDER BY RecordedAt DESC LIMIT 1"
+                : "SELECT Temperature, Humidity, Rainfall, Wind FROM WeatherLogs ORDER BY RecordedAt DESC LIMIT 1";
         EntityManager em = JPAUtil.getEntityManager();
         try {
             java.util.List<Object[]> rows = em.createNativeQuery(weatherSql).getResultList();
@@ -522,10 +522,10 @@ public class ChatServlet extends HttpServlet {
     private String getSimpleWeatherAnswer(Integer zoneId) {
         String cityName = getCityNameFromDb(zoneId);
         String sql = zoneId != null
-                ? "SELECT TOP 1 Temperature, Humidity, Rainfall, Wind, RecordedAt"
-                        + " FROM WeatherLogs WHERE ZoneID=" + zoneId + " ORDER BY RecordedAt DESC"
-                : "SELECT TOP 1 Temperature, Humidity, Rainfall, Wind, RecordedAt"
-                        + " FROM WeatherLogs ORDER BY RecordedAt DESC";
+                ? "SELECT Temperature, Humidity, Rainfall, Wind, RecordedAt"
+                        + " FROM WeatherLogs WHERE ZoneID=" + zoneId + " ORDER BY RecordedAt DESC LIMIT 1"
+                : "SELECT Temperature, Humidity, Rainfall, Wind, RecordedAt"
+                        + " FROM WeatherLogs ORDER BY RecordedAt DESC LIMIT 1";
         EntityManager em = JPAUtil.getEntityManager();
         try {
             java.util.List<Object[]> rows = em.createNativeQuery(sql).getResultList();
@@ -691,11 +691,11 @@ public class ChatServlet extends HttpServlet {
             // === 2. Query Tương Lai (Forecasts) vs Quá Khứ/Hiện Tại (WeatherLogs) ===
             if (dayOffset > 0) {
                 // Tương lai: Bảng Forecasts CHỈ có (ForecastID, ZoneID, ForecastDate, Temperature, CreatedAt)
-                sql = "SELECT TOP 1 f.Temperature, f.ForecastDate "
+                sql = "SELECT f.Temperature, f.ForecastDate "
                     + "FROM Forecasts f "
                     + (cityCond.startsWith("z.CityID") ? "JOIN Zones z ON f.ZoneID = z.ZoneID " : "")
                     + "WHERE " + cityCond + "f.ForecastDate = '" + targetDateStr + "' "
-                    + "ORDER BY f.ForecastDate DESC";
+                    + "ORDER BY f.ForecastDate DESC LIMIT 1";
                 
                 System.out.println("[ChatBot] SQL Query (Forecasts) : " + sql);
                 rows = em.createNativeQuery(sql).getResultList();
@@ -731,11 +731,11 @@ public class ChatServlet extends HttpServlet {
             } else {
                 // Quá khứ/Hôm nay: Bảng WeatherLogs có đầy đủ Temperature, Humidity, Rainfall, Wind
                 String wCityCond = cityCond.replace("f.ZoneID", "w.ZoneID");
-                sql = "SELECT TOP 1 w.Temperature, w.Humidity, w.Rainfall, w.Wind, w.RecordedAt "
+                sql = "SELECT w.Temperature, w.Humidity, w.Rainfall, w.Wind, w.RecordedAt "
                     + "FROM WeatherLogs w "
                     + (wCityCond.startsWith("z.CityID") ? "JOIN Zones z ON w.ZoneID = z.ZoneID " : "")
                     + "WHERE " + wCityCond + "CAST(w.RecordedAt AS DATE) = '" + targetDateStr + "' "
-                    + "ORDER BY w.RecordedAt DESC";
+                    + "ORDER BY w.RecordedAt DESC LIMIT 1";
                 
                 System.out.println("[ChatBot] SQL Query (WeatherLogs) : " + sql);
                 rows = em.createNativeQuery(sql).getResultList();
@@ -743,11 +743,11 @@ public class ChatServlet extends HttpServlet {
                 boolean isStale = false;
                 if (rows.isEmpty()) {
                     System.out.println("[ChatBot] Fallback: Searching latest available WeatherLog");
-                    String fallbackSql = "SELECT TOP 1 w.Temperature, w.Humidity, w.Rainfall, w.Wind, w.RecordedAt "
+                    String fallbackSql = "SELECT w.Temperature, w.Humidity, w.Rainfall, w.Wind, w.RecordedAt "
                             + "FROM WeatherLogs w "
                             + (wCityCond.startsWith("z.CityID") ? "JOIN Zones z ON w.ZoneID = z.ZoneID " : "")
                             + (wCityCond.isEmpty() ? "" : "WHERE " + wCityCond.substring(0, wCityCond.length() - 5))
-                            + " ORDER BY w.RecordedAt DESC";
+                            + " ORDER BY w.RecordedAt DESC LIMIT 1";
                     rows = em.createNativeQuery(fallbackSql).getResultList();
                     if (rows.isEmpty()) {
                          return "Dữ liệu cho yêu cầu này hiện chưa có trong hệ thống. Chúng tôi đang cập nhật dữ liệu và tính năng này sẽ sớm được hỗ trợ trong các phiên bản tiếp theo.";
@@ -825,9 +825,9 @@ public class ChatServlet extends HttpServlet {
     /** Shared helper: lấy chuỗi mô tả thời tiết gần nhất từ DB */
     private String getWeatherContextString(Integer zoneId, String cityName) {
         String sql = zoneId != null
-                ? "SELECT TOP 1 Temperature, Humidity, Rainfall, Wind, RecordedAt FROM WeatherLogs WHERE ZoneID="
-                        + zoneId + " ORDER BY RecordedAt DESC"
-                : "SELECT TOP 1 Temperature, Humidity, Rainfall, Wind, RecordedAt FROM WeatherLogs ORDER BY RecordedAt DESC";
+                ? "SELECT Temperature, Humidity, Rainfall, Wind, RecordedAt FROM WeatherLogs WHERE ZoneID= LIMIT 1"
+                        + zoneId + " ORDER BY RecordedAt DESC LIMIT 5"
+                : "SELECT Temperature, Humidity, Rainfall, Wind, RecordedAt FROM WeatherLogs ORDER BY RecordedAt DESC LIMIT 1";
         EntityManager em = JPAUtil.getEntityManager();
         try {
             java.util.List<Object[]> rows = em.createNativeQuery(sql).getResultList();
@@ -957,7 +957,7 @@ public class ChatServlet extends HttpServlet {
             if (i > 0) inClause.append(",");
             inClause.append("'").append(variants[i].replace("'", "''")).append("'");
         }
-        String sql = "SELECT TOP 1 z.ZoneID FROM Zones z "
+        String sql = "SELECT z.ZoneID FROM Zones z  LIMIT 1"
                 + "JOIN Cities c ON z.CityID = c.CityID "
                 + "WHERE c.CityName IN (" + inClause + ") ORDER BY z.ZoneID";
 
@@ -995,9 +995,9 @@ public class ChatServlet extends HttpServlet {
         StringBuilder dbData = new StringBuilder();
         JsonArray historyArray = new JsonArray();
         String sql = zoneId != null
-                ? "SELECT TOP 5 Temperature, Humidity, Rainfall, Wind, RecordedAt FROM WeatherLogs WHERE ZoneID="
-                        + zoneId + " ORDER BY RecordedAt DESC"
-                : "SELECT TOP 5 Temperature, Humidity, Rainfall, Wind, RecordedAt FROM WeatherLogs ORDER BY RecordedAt DESC";
+                ? "SELECT Temperature, Humidity, Rainfall, Wind, RecordedAt FROM WeatherLogs WHERE ZoneID="
+                        + zoneId + " ORDER BY RecordedAt DESC LIMIT 5"
+                : "SELECT Temperature, Humidity, Rainfall, Wind, RecordedAt FROM WeatherLogs ORDER BY RecordedAt DESC LIMIT 5";
         EntityManager em = JPAUtil.getEntityManager();
         try {
             java.util.List<Object[]> rows = em.createNativeQuery(sql).getResultList();
@@ -1188,9 +1188,9 @@ public class ChatServlet extends HttpServlet {
                 .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm, dd/MM/yyyy"));
 
         String sql = zoneId != null
-                ? "SELECT TOP 1 Temperature, Humidity, Rainfall, Wind, RecordedAt FROM WeatherLogs WHERE ZoneID="
-                        + zoneId + " ORDER BY RecordedAt DESC"
-                : "SELECT TOP 1 Temperature, Humidity, Rainfall, Wind, RecordedAt FROM WeatherLogs ORDER BY RecordedAt DESC";
+                ? "SELECT Temperature, Humidity, Rainfall, Wind, RecordedAt FROM WeatherLogs WHERE ZoneID= LIMIT 1"
+                        + zoneId + " ORDER BY RecordedAt DESC LIMIT 5"
+                : "SELECT Temperature, Humidity, Rainfall, Wind, RecordedAt FROM WeatherLogs ORDER BY RecordedAt DESC LIMIT 1";
 
         double temp = 0, humid = 0, rain = 0, wind = 0;
         String recordedAt = "";
@@ -1244,8 +1244,8 @@ public class ChatServlet extends HttpServlet {
      */
     private String getCityNameFromDb(Integer zoneId) {
         String sql = zoneId != null
-                ? "SELECT TOP 1 c.CityName FROM Zones z JOIN Cities c ON z.CityID=c.CityID WHERE z.ZoneID=" + zoneId
-                : "SELECT TOP 1 CityName FROM Cities";
+                ? "SELECT c.CityName FROM Zones z JOIN Cities c ON z.CityID=c.CityID WHERE z.ZoneID= LIMIT 1" + zoneId
+                : "SELECT CityName FROM Cities LIMIT 1";
         EntityManager em = JPAUtil.getEntityManager();
         try {
             Object result = em.createNativeQuery(sql).getSingleResult();
@@ -1275,7 +1275,7 @@ public class ChatServlet extends HttpServlet {
     private String getWeatherStat(Integer zoneId, String col, String label, String unit) throws Exception {
         String cond = zoneId != null ? " WHERE ZoneID=" + zoneId : "";
         String sql = "SELECT AVG(" + col + "), MAX(" + col + "), MIN(" + col + ") FROM WeatherLogs" + cond;
-        String sqlCurr = "SELECT TOP 1 " + col + " FROM WeatherLogs" + cond + " ORDER BY RecordedAt DESC";
+        String sqlCurr = "SELECT " + col + " FROM WeatherLogs" + cond + " ORDER BY RecordedAt DESC LIMIT 1";
         EntityManager em = JPAUtil.getEntityManager();
         try {
             Object[] agg = (Object[]) em.createNativeQuery(sql).getSingleResult();
@@ -1295,8 +1295,8 @@ public class ChatServlet extends HttpServlet {
     }
 
     private String getAlerts(Integer zoneId) throws Exception {
-        String sql = "SELECT TOP 5 A.Message, A.AlertTime, Z.ZoneName FROM Alerts A JOIN Zones Z ON A.ZoneID=Z.ZoneID"
-                + (zoneId != null ? " WHERE A.ZoneID=" + zoneId : "") + " ORDER BY A.AlertTime DESC";
+        String sql = "SELECT A.Message, A.AlertTime, Z.ZoneName FROM Alerts A JOIN Zones Z ON A.ZoneID=Z.ZoneID"
+                + (zoneId != null ? " WHERE A.ZoneID=" + zoneId : "") + " ORDER BY A.AlertTime DESC LIMIT 5";
         EntityManager em = JPAUtil.getEntityManager();
         try {
             java.util.List<Object[]> rows = em.createNativeQuery(sql).getResultList();
@@ -1361,8 +1361,8 @@ public class ChatServlet extends HttpServlet {
         String weatherSummary = "";
         
         String weatherSql = zoneId != null
-                ? "SELECT TOP 1 Temperature, Humidity, Rainfall, Wind FROM WeatherLogs WHERE ZoneID=" + zoneId + " ORDER BY RecordedAt DESC"
-                : "SELECT TOP 1 Temperature, Humidity, Rainfall, Wind FROM WeatherLogs ORDER BY RecordedAt DESC";
+                ? "SELECT Temperature, Humidity, Rainfall, Wind FROM WeatherLogs WHERE ZoneID=" + zoneId + " ORDER BY RecordedAt DESC LIMIT 1"
+                : "SELECT Temperature, Humidity, Rainfall, Wind FROM WeatherLogs ORDER BY RecordedAt DESC LIMIT 1";
         EntityManager emW = JPAUtil.getEntityManager();
         try {
             java.util.List<Object[]> wRows = emW.createNativeQuery(weatherSql).getResultList();
@@ -1463,9 +1463,9 @@ public class ChatServlet extends HttpServlet {
     private String getCropAdviceFromWeather(String userQuestion, Integer zoneId) throws Exception {
         String cityName = getCityNameFromDb(zoneId);
         String weatherSql = zoneId != null
-                ? "SELECT TOP 1 Temperature, Humidity, Rainfall, Wind FROM WeatherLogs WHERE ZoneID=" + zoneId
+                ? "SELECT Temperature, Humidity, Rainfall, Wind FROM WeatherLogs WHERE ZoneID= LIMIT 1" + zoneId
                         + " ORDER BY RecordedAt DESC"
-                : "SELECT TOP 1 Temperature, Humidity, Rainfall, Wind FROM WeatherLogs ORDER BY RecordedAt DESC";
+                : "SELECT Temperature, Humidity, Rainfall, Wind FROM WeatherLogs ORDER BY RecordedAt DESC LIMIT 1";
         String weatherInfo = "(chưa có dữ liệu thời tiết)";
         EntityManager em = JPAUtil.getEntityManager();
         try {

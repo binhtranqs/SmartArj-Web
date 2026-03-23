@@ -48,9 +48,9 @@ public class ChatLogDAO {
         EntityManager em = JPAUtil.getEntityManager();
         try {
             return em.createNativeQuery(
-                    "SELECT TOP " + limit + " Intent, COUNT(*) AS Cnt " +
+                    "SELECT Intent, COUNT(*) AS Cnt " +
                             "FROM ChatLogs WHERE Intent IS NOT NULL " +
-                            "GROUP BY Intent ORDER BY Cnt DESC")
+                            "GROUP BY Intent ORDER BY Cnt DESC LIMIT " + limit)
                     .getResultList();
         } finally {
             em.close();
@@ -77,8 +77,8 @@ public class ChatLogDAO {
         try {
             Number result = (Number) em.createNativeQuery(
                     "SELECT COUNT(*) FROM ChatLogs " +
-                            "WHERE CreatedAt >= CAST(GETDATE() AS DATE) " +
-                            "AND CreatedAt < CASt(DATEADD(day, 1, GETDATE()) AS DATE)")
+                            "WHERE CreatedAt >= CURRENT_DATE " +
+                            "AND CreatedAt < CASt((CURRENT_TIMESTAMP + INTERVAL '1 days') AS DATE)")
                     .getSingleResult();
             return result != null ? result.longValue() : 0;
         } catch (Exception e) {
@@ -94,8 +94,8 @@ public class ChatLogDAO {
         try {
             Number result = (Number) em.createNativeQuery(
                     "SELECT COUNT(DISTINCT UserId) FROM ChatLogs " +
-                            "WHERE CreatedAt >= CAST(GETDATE() AS DATE) " +
-                            "AND CreatedAt < CAST(DATEADD(day, 1, GETDATE()) AS DATE)")
+                            "WHERE CreatedAt >= CURRENT_DATE " +
+                            "AND CreatedAt < CAST((CURRENT_TIMESTAMP + INTERVAL '1 days') AS DATE)")
                     .getSingleResult();
             return result != null ? result.longValue() : 0;
         } catch (Exception e) {
@@ -111,8 +111,8 @@ public class ChatLogDAO {
         try {
             Number result = (Number) em.createNativeQuery(
                     "SELECT COUNT(*) FROM ChatLogs " +
-                            "WHERE CreatedAt >= CAST(GETDATE() AS DATE) " +
-                            "AND CreatedAt < CAST(DATEADD(day, 1, GETDATE()) AS DATE) " +
+                            "WHERE CreatedAt >= CURRENT_DATE " +
+                            "AND CreatedAt < CAST((CURRENT_TIMESTAMP + INTERVAL '1 days') AS DATE) " +
                             "AND AiCalled = 1")
                     .getSingleResult();
             return result != null ? result.longValue() : 0;
@@ -138,8 +138,8 @@ public class ChatLogDAO {
                             "  COUNT(*) as total_msgs, " +
                             "  SUM(CAST(AiCalled AS INT)) as ai_responses " +
                             "FROM ChatLogs " +
-                            "WHERE CreatedAt >= CAST(DATEADD(day, -6, GETDATE()) AS DATE) " +
-                            "  AND CreatedAt < CAST(DATEADD(day, 1, GETDATE()) AS DATE) " +
+                            "WHERE CreatedAt >= CAST((CURRENT_TIMESTAMP - INTERVAL '6 days') AS DATE) " +
+                            "  AND CreatedAt < CAST((CURRENT_TIMESTAMP + INTERVAL '1 days') AS DATE) " +
                             "GROUP BY CAST(CreatedAt AS DATE) " +
                             "ORDER BY log_date ASC")
                     .getResultList();
@@ -156,15 +156,15 @@ public class ChatLogDAO {
         EntityManager em = JPAUtil.getEntityManager();
         try {
             return em.createNativeQuery(
-                    "SELECT TOP " + limit + " " +
-                            "  ISNULL(u.Username, N'Khách') as Username, " +
+                    "SELECT " +
+                            "  COALESCE(u.Username, 'Khách') as Username, " +
                             "  c.Message, " +
                             "  CASE WHEN c.AiCalled = 1 THEN 'AI' ELSE 'DB' END as Source, " +
                             "  c.CreatedAt " +
                             "FROM ChatLogs c " +
                             "LEFT JOIN Users u ON c.UserID = u.UserID " +
                             "WHERE c.Message IS NOT NULL " +
-                            "ORDER BY c.CreatedAt DESC")
+                            "ORDER BY c.CreatedAt DESC LIMIT " + limit)
                     .getResultList();
         } finally {
             em.close();
@@ -179,16 +179,16 @@ public class ChatLogDAO {
         EntityManager em = JPAUtil.getEntityManager();
         try {
             return em.createNativeQuery(
-                    "SELECT TOP " + limit + " " +
+                    "SELECT " +
                             "  LTRIM(RTRIM(Message)) AS CleanMessage, " +
                             "  COUNT(*) AS Total " +
                             "FROM ChatLogs " +
-                            "WHERE CreatedAt >= CAST(GETDATE() AS DATE) " +
-                            "  AND CreatedAt < CASt(DATEADD(day, 1, GETDATE()) AS DATE) " +
+                            "WHERE CreatedAt >= CURRENT_DATE " +
+                            "  AND CreatedAt < CASt((CURRENT_TIMESTAMP + INTERVAL '1 days') AS DATE) " +
                             "  AND Message IS NOT NULL " +
                             "  AND LTRIM(RTRIM(Message)) <> '' " +
                             "GROUP BY LTRIM(RTRIM(Message)) " +
-                            "ORDER BY Total DESC")
+                            "ORDER BY Total DESC LIMIT " + limit)
                     .getResultList();
         } finally {
             em.close();

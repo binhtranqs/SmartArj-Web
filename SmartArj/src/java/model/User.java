@@ -51,7 +51,7 @@ public class User {
     @Column(name = "LockedUntil")
     private LocalDateTime lockedUntil;
 
-    /** Role: 'USER' (default) | 'ADMIN' */
+    /** Role: 'USER' (default) | 'ADMI' */
     @Column(name = "Role", length = 20)
     private String role = "USER";
 

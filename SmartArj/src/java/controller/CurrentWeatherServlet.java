@@ -65,12 +65,12 @@ public class CurrentWeatherServlet extends HttpServlet {
 
     private Map<String, Object> getCurrentWeatherData(int cityId) {
         // Fetch latest weather log for any zone in this city
-        String sql = "SELECT TOP 1 w.Temperature, w.Humidity, w.Rainfall, c.CityName " +
+        String sql = "SELECT w.Temperature, w.Humidity, w.Rainfall, c.CityName " +
                 "FROM WeatherLogs w " +
                 "JOIN Zones z ON w.ZoneID = z.ZoneID " +
                 "JOIN Cities c ON z.CityID = c.CityID " +
                 "WHERE c.CityID = ? " +
-                "ORDER BY w.RecordedAt DESC";
+                "ORDER BY w.RecordedAt DESC LIMIT 1";
 
         try (Connection conn = new DBContext().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {

@@ -123,7 +123,7 @@ public class CrawlerScheduler implements ServletContextListener {
      * Kiểm tra hôm nay đã có data chưa (để tránh crawl thừa khi restart server)
      */
     private boolean checkTodayDataExists() {
-        String sql = "SELECT COUNT(*) FROM MarketPrices WHERE CAST(CrawledAt AS DATE) = CAST(GETDATE() AS DATE)";
+        String sql = "SELECT COUNT(*) FROM MarketPrices WHERE CAST(CrawledAt AS DATE) = CURRENT_DATE";
         try (Connection conn = new DBContext().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {

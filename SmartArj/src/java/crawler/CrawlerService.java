@@ -98,8 +98,8 @@ public class CrawlerService {
      */
     public List<java.util.Map<String, Object>> getCrawlerLogs(int limit) {
         List<java.util.Map<String, Object>> logs = new java.util.ArrayList<>();
-        String sql = "SELECT TOP " + limit + " LogID, RunAt, Status, ItemsCrawled, Duration, ErrorMsg " +
-                "FROM CrawlerLogs ORDER BY RunAt DESC";
+        String sql = "SELECT LogID, RunAt, Status, ItemsCrawled, Duration, ErrorMsg " +
+                "FROM CrawlerLogs ORDER BY RunAt DESC LIMIT " + limit;
         try (Connection conn = new DBContext().getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {

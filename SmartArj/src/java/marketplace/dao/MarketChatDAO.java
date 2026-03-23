@@ -87,9 +87,9 @@ public class MarketChatDAO {
         // Lấy partner cuối cùng chat, sắp xếp theo tin mới nhất
         String sql =
             "SELECT partner_id, listing_id, MAX(SentAt) AS last_time, " +
-            "  (SELECT TOP 1 u2.FullName FROM Users u2 WHERE u2.UserID = partner_id) AS partner_name, " +
-            "  (SELECT TOP 1 l.ProductName FROM Listings l WHERE l.ListingID = listing_id) AS product_name, " +
-            "  (SELECT TOP 1 m2.Message FROM MarketChatMessages m2 " +
+            "  (SELECT u2.FullName FROM Users u2 WHERE u2.UserID = partner_id LIMIT 1) AS partner_name, " +
+            "  (SELECT l.ProductName FROM Listings l WHERE l.ListingID = listing_id LIMIT 1) AS product_name, " +
+            "  (SELECT m2.Message FROM MarketChatMessages m2 " +
             "   WHERE ((m2.SenderID=? AND m2.ReceiverID=partner_id AND (m2.ListingID=listing_id OR (m2.ListingID IS NULL AND listing_id IS NULL))) OR (m2.SenderID=partner_id AND m2.ReceiverID=? AND (m2.ListingID=listing_id OR (m2.ListingID IS NULL AND listing_id IS NULL)))) " +
             "   ORDER BY m2.SentAt DESC) AS last_msg " +
             "FROM ( " +

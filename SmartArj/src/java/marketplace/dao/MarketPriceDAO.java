@@ -24,9 +24,9 @@ public class MarketPriceDAO {
      */
     public List<MarketPrice> getLatestPrices() {
         List<MarketPrice> list = new ArrayList<>();
-        String sql = "SELECT TOP 30 PriceID, ProductName, RegionName, Price, Unit, CrawledAt, SourceURL " +
+        String sql = "SELECT PriceID, ProductName, RegionName, Price, Unit, CrawledAt, SourceURL " +
                 "FROM MarketPrices " +
-                "ORDER BY CrawledAt DESC";
+                "ORDER BY CrawledAt DESC LIMIT 30";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ResultSet rs = ps.executeQuery()) {
@@ -44,10 +44,10 @@ public class MarketPriceDAO {
      */
     public List<MarketPrice> findByProductName(String productName) {
         List<MarketPrice> list = new ArrayList<>();
-        String sql = "SELECT TOP 5 PriceID, ProductName, RegionName, Price, Unit, CrawledAt, SourceURL " +
+        String sql = "SELECT PriceID, ProductName, RegionName, Price, Unit, CrawledAt, SourceURL " +
                 "FROM MarketPrices " +
                 "WHERE ProductName LIKE ? " +
-                "ORDER BY CrawledAt DESC";
+                "ORDER BY CrawledAt DESC LIMIT 5";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, "%" + productName + "%");
@@ -66,7 +66,7 @@ public class MarketPriceDAO {
      * Lấy giá trung bình thị trường theo tên sản phẩm
      */
     public java.math.BigDecimal getAveragePrice(String productName) {
-        String sql = "SELECT AVG(Price) FROM MarketPrices WHERE ProductName LIKE ? AND CrawledAt >= DATEADD(day,-7,GETDATE())";
+        String sql = "SELECT AVG(Price) FROM MarketPrices WHERE ProductName LIKE ? AND CrawledAt >= (CURRENT_TIMESTAMP - INTERVAL '7 days')";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, "%" + productName + "%");
@@ -85,7 +85,7 @@ public class MarketPriceDAO {
      * Xoá dữ liệu cũ (giữ lại 7 ngày gần nhất)
      */
     public void deleteOlderThan(int days) {
-        String sql = "DELETE FROM MarketPrices WHERE CrawledAt < DATEADD(day,-?,GETDATE())";
+        String sql = "DELETE FROM MarketPrices WHERE CrawledAt < (CURRENT_TIMESTAMP - (? * INTERVAL '1 day'))";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, days);
@@ -100,7 +100,7 @@ public class MarketPriceDAO {
      * → để insert đè dữ liệu mới, tránh trùng lặp mỗi lần crawl
      */
     public int deleteTodayPrices() {
-        String sql = "DELETE FROM MarketPrices WHERE CAST(CrawledAt AS DATE) = CAST(GETDATE() AS DATE)";
+        String sql = "DELETE FROM MarketPrices WHERE CAST(CrawledAt AS DATE) = CURRENT_DATE";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             return ps.executeUpdate();

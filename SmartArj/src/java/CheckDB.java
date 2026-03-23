@@ -12,7 +12,7 @@ public class CheckDB {
 
                 System.out.println("--- WeatherLogs ---");
                 try (Statement stmt = conn.createStatement();
-                        ResultSet rs = stmt.executeQuery("SELECT TOP 5 * FROM WeatherLogs ORDER BY RecordedAt DESC")) {
+                        ResultSet rs = stmt.executeQuery("SELECT * FROM WeatherLogs ORDER BY RecordedAt DESC LIMIT 5")) {
                     while (rs.next()) {
                         System.out.println("ZoneID: " + rs.getInt("ZoneID") +
                                 ", Date: " + rs.getTimestamp("RecordedAt") +

@@ -49,7 +49,7 @@ public class AlertsServlet extends HttpServlet {
 
             em = JPAUtil.getEntityManager();
 
-            String sql = "SELECT TOP 10 A.AlertID, A.ZoneID, A.Message, A.AlertTime, A.IsRead " +
+            String sql = "SELECT A.AlertID, A.ZoneID, A.Message, A.AlertTime, A.IsRead " +
                     "FROM Alerts A " +
                     "JOIN Zones Z ON A.ZoneID = Z.ZoneID ";
 
@@ -57,7 +57,7 @@ public class AlertsServlet extends HttpServlet {
             if (!user.isAdmin()) {
                 sql += "WHERE Z.OwnerID = :ownerId ";
             }
-            sql += "ORDER BY A.AlertTime DESC";
+            sql += "ORDER BY A.AlertTime DESC LIMIT 10";
 
             Query query = em.createNativeQuery(sql);
             if (!user.isAdmin()) {

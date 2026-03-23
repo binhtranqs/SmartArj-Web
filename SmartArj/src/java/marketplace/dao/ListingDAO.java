@@ -39,7 +39,7 @@ public class ListingDAO {
             double minPrice, double maxPrice, int limit) {
         List<Listing> list = new ArrayList<>();
         StringBuilder sql = new StringBuilder(
-                "SELECT TOP " + (limit > 0 ? limit : 50) + " " +
+                "SELECT " +
                         "l.ListingID, l.FarmerID, u.FullName AS FarmerName, u.Email AS FarmerEmail, " +
                         "l.ProductName, l.Description, l.RegionID, r.RegionName, " +
                         "l.Price, l.Unit, l.Quantity, l.ImageURL, l.Status, l.CreatedAt, l.UpdatedAt " +
@@ -65,7 +65,7 @@ public class ListingDAO {
             sql.append("AND l.Price <= ? ");
             params.add(maxPrice);
         }
-        sql.append("ORDER BY l.CreatedAt DESC");
+        sql.append("ORDER BY l.CreatedAt DESC LIMIT ").append(limit > 0 ? limit : 50);
 
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql.toString())) {
@@ -168,7 +168,7 @@ public class ListingDAO {
      * Cập nhật listing
      */
     public boolean update(Listing l) {
-        String sql = "UPDATE Listings SET ProductName=?, Description=?, RegionID=?, Price=?, Unit=?, Quantity=?, ImageURL=?, Status=?, UpdatedAt=GETDATE() "
+        String sql = "UPDATE Listings SET ProductName=?, Description=?, RegionID=?, Price=?, Unit=?, Quantity=?, ImageURL=?, Status=?, UpdatedAt=CURRENT_TIMESTAMP "
                 +
                 "WHERE ListingID=? AND FarmerID=?";
         try (Connection conn = getConnection();
@@ -223,7 +223,7 @@ public class ListingDAO {
      * Farmer dùng để "Mở bán lại" khi nhập thêm hàng
      */
     public boolean updateStatus(int listingId, int farmerId, String status) {
-        String sql = "UPDATE Listings SET Status=?, UpdatedAt=GETDATE() WHERE ListingID=? AND FarmerID=?";
+        String sql = "UPDATE Listings SET Status=?, UpdatedAt=CURRENT_TIMESTAMP WHERE ListingID=? AND FarmerID=?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, status);
@@ -249,7 +249,7 @@ public class ListingDAO {
         String sqlUpdate = "UPDATE Listings SET " +
                 "Quantity = CASE WHEN Quantity - ? < 0 THEN 0 ELSE Quantity - ? END, " +
                 "Status  = CASE WHEN Quantity - ? <= 0 THEN 'SOLD_OUT' ELSE Status END, " +
-                "UpdatedAt = GETDATE() " +
+                "UpdatedAt = CURRENT_TIMESTAMP " +
                 "WHERE ListingID = ?";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sqlUpdate)) {
@@ -279,13 +279,13 @@ public class ListingDAO {
         // Bước 1: lấy 5 tên SP được mua gần nhất từ Listings
         // Dùng GROUP BY và ORDER BY MAX(CreatedAt) để lấy các SP mới mua nhất
         String sqlKeywords =
-            "SELECT TOP 5 l2.ProductName " +
+            "SELECT l2.ProductName " +
             "FROM OrderItems oi " +
             "JOIN Orders o  ON oi.OrderID  = o.OrderID " +
             "JOIN Listings l2 ON oi.ListingID = l2.ListingID " +
             "WHERE o.BuyerID = ? AND l2.ProductName IS NOT NULL " +
             "GROUP BY l2.ProductName " +
-            "ORDER BY MAX(o.CreatedAt) DESC";
+            "ORDER BY MAX(o.CreatedAt) DESC LIMIT 5";
 
         List<String> keywords = new ArrayList<>();
         try (Connection conn = getConnection();
@@ -333,7 +333,7 @@ public class ListingDAO {
 
         // Bước 2: xây dựng câu truy vấn LIKE cho từng từ khóa
         StringBuilder sql = new StringBuilder(
-            "SELECT TOP " + limit + " " +
+            "SELECT " +
             "l.ListingID, l.FarmerID, u.FullName AS FarmerName, u.Email AS FarmerEmail, " +
             "l.ProductName, l.Description, l.RegionID, r.RegionName, " +
             "l.Price, l.Unit, l.Quantity, l.ImageURL, l.Status, l.CreatedAt, l.UpdatedAt " +
@@ -358,7 +358,7 @@ public class ListingDAO {
             queryParams.add("%" + keywords.get(i) + "%");
         }
         // Các sản phẩm cùng chỉ số ưu tiên thì món nào MỚI ĐĂNG sẽ lên trên
-        sql.append("l.CreatedAt DESC");
+        sql.append("l.CreatedAt DESC LIMIT ").append(limit);
 
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
@@ -386,13 +386,13 @@ public class ListingDAO {
         List<String> names = new ArrayList<>();
         // Cập nhật: Chỉ lấy top 5 tên sản phẩm GẦN NHẤT
         String sql =
-            "SELECT TOP 5 l2.ProductName " +
+            "SELECT l2.ProductName " +
             "FROM OrderItems oi " +
             "JOIN Orders o   ON oi.OrderID  = o.OrderID " +
             "JOIN Listings l2 ON oi.ListingID = l2.ListingID " +
             "WHERE o.BuyerID = ? AND l2.ProductName IS NOT NULL " +
             "GROUP BY l2.ProductName " +
-            "ORDER BY MAX(o.CreatedAt) DESC";
+            "ORDER BY MAX(o.CreatedAt) DESC LIMIT 5";
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, buyerId);

@@ -21,7 +21,7 @@ import java.util.logging.Logger;
  *   UserId      INT            NULL
  *   EntityId    INT            NULL
  *   Description NVARCHAR(500)  NOT NULL
- *   CreatedAt   DATETIME       DEFAULT GETDATE()
+ *   CreatedAt   DATETIME       DEFAULT CURRENT_TIMESTAMP
  */
 public class SystemEventDAO {
 
@@ -81,9 +81,9 @@ public class SystemEventDAO {
     public List<Map<String, Object>> getRecentEvents(int limit) {
         List<Map<String, Object>> result = new ArrayList<>();
         int safeLimit = (limit > 0 && limit <= 500) ? limit : 100;
-        String sql = "SELECT TOP " + safeLimit + " "
+        String sql = "SELECT "
                    + "EventId, EventType, UserId, EntityId, Description, CreatedAt "
-                   + "FROM SystemEvents ORDER BY CreatedAt DESC";
+                   + "FROM SystemEvents ORDER BY CreatedAt DESC LIMIT " + safeLimit;
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -105,9 +105,9 @@ public class SystemEventDAO {
     public List<Map<String, Object>> getEventsByType(String eventType, int limit) {
         List<Map<String, Object>> result = new ArrayList<>();
         int safeLimit = (limit > 0 && limit <= 500) ? limit : 100;
-        String sql = "SELECT TOP " + safeLimit + " "
+        String sql = "SELECT "
                    + "EventId, EventType, UserId, EntityId, Description, CreatedAt "
-                   + "FROM SystemEvents WHERE EventType = ? ORDER BY CreatedAt DESC";
+                   + "FROM SystemEvents WHERE EventType = ? ORDER BY CreatedAt DESC LIMIT " + safeLimit;
         try (Connection conn = getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, eventType);

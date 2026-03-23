@@ -186,7 +186,7 @@ public class CartDAO {
      * Dùng để validate: existingQty + newQty <= stockQty khi add to cart.
      */
     public BigDecimal getCartQtyForListing(int buyerId, int listingId) {
-        String sql = "SELECT ISNULL(SUM(Quantity), 0) FROM CartItems WHERE BuyerID=? AND ListingID=?";
+        String sql = "SELECT COALESCE(SUM(Quantity), 0) FROM CartItems WHERE BuyerID=? AND ListingID=?";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, buyerId);

@@ -145,9 +145,9 @@ public class ZoneDAO {
                 "    (SELECT COUNT(*) FROM Alerts a WHERE a.ZoneID = z.ZoneID AND a.IsRead = 0) as AlertCount\n" +
                 "FROM Zones z\n" +
                 "LEFT JOIN Cities c ON z.CityID = c.CityID\n" +
-                "OUTER APPLY (SELECT TOP 1 cc.CropName, cc.MinTemp, cc.MaxTemp FROM ZoneCrops zc JOIN CropCatalog cc ON zc.CropCatalogID = cc.CropCatalogID WHERE zc.ZoneID = z.ZoneID ORDER BY zc.CreatedAt DESC) cr\n"
+                "LEFT JOIN LATERAL (SELECT cc.CropName, cc.MinTemp, cc.MaxTemp FROM ZoneCrops zc JOIN CropCatalog cc ON zc.CropCatalogID = cc.CropCatalogID WHERE zc.ZoneID = z.ZoneID ORDER BY zc.CreatedAt DESC LIMIT 1) cr ON true\n"
                 +
-                "OUTER APPLY (SELECT TOP 1 * FROM WeatherLogs wl WHERE wl.ZoneID = z.ZoneID ORDER BY RecordedAt DESC) w";
+                "LEFT JOIN LATERAL (SELECT * FROM WeatherLogs wl WHERE wl.ZoneID = z.ZoneID ORDER BY RecordedAt DESC LIMIT 1) w ON true";
 
         try {
             java.util.List<Object[]> results = em.createNativeQuery(sql).getResultList();
@@ -214,7 +214,7 @@ public class ZoneDAO {
     private java.util.List<Double> getSparklineData(int zoneId) {
         EntityManager em = JPAUtil.getEntityManager();
         try {
-            String sql = "SELECT TOP 7 Temperature FROM WeatherLogs WHERE ZoneID = ? ORDER BY RecordedAt DESC";
+            String sql = "SELECT Temperature FROM WeatherLogs WHERE ZoneID = ? ORDER BY RecordedAt DESC LIMIT 7";
             java.util.List<Object> results = em.createNativeQuery(sql)
                     .setParameter(1, zoneId)
                     .getResultList();
@@ -266,9 +266,9 @@ public class ZoneDAO {
                 "    (SELECT COUNT(*) FROM Alerts a WHERE a.ZoneID = z.ZoneID AND a.IsRead = 0) as AlertCount\n" +
                 "FROM Zones z\n" +
                 "LEFT JOIN Cities c ON z.CityID = c.CityID\n" +
-                "OUTER APPLY (SELECT TOP 1 cc.CropName, cc.MinTemp, cc.MaxTemp FROM ZoneCrops zc JOIN CropCatalog cc ON zc.CropCatalogID = cc.CropCatalogID WHERE zc.ZoneID = z.ZoneID ORDER BY zc.CreatedAt DESC) cr\n"
+                "LEFT JOIN LATERAL (SELECT cc.CropName, cc.MinTemp, cc.MaxTemp FROM ZoneCrops zc JOIN CropCatalog cc ON zc.CropCatalogID = cc.CropCatalogID WHERE zc.ZoneID = z.ZoneID ORDER BY zc.CreatedAt DESC LIMIT 1) cr ON true\n"
                 +
-                "OUTER APPLY (SELECT TOP 1 * FROM WeatherLogs wl WHERE wl.ZoneID = z.ZoneID ORDER BY RecordedAt DESC) w\n"
+                "LEFT JOIN LATERAL (SELECT * FROM WeatherLogs wl WHERE wl.ZoneID = z.ZoneID ORDER BY RecordedAt DESC LIMIT 1) w ON true\n"
                 +
                 "WHERE z.OwnerID = ?";
 

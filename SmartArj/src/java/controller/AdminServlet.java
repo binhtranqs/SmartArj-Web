@@ -57,11 +57,11 @@ public class AdminServlet extends HttpServlet {
         try {
             List<Object[]> zones = em.createNativeQuery(
                     "SELECT z.ZoneID, z.ZoneName, c.CityName, c.CityID, "
-                    + "  (SELECT TOP 1 Temperature FROM WeatherLogs WHERE ZoneID=z.ZoneID ORDER BY RecordedAt DESC) AS Temp,"
-                    + "  (SELECT TOP 1 Humidity    FROM WeatherLogs WHERE ZoneID=z.ZoneID ORDER BY RecordedAt DESC) AS Humid,"
-                    + "  (SELECT TOP 1 Rainfall    FROM WeatherLogs WHERE ZoneID=z.ZoneID ORDER BY RecordedAt DESC) AS Rain,"
-                    + "  (SELECT TOP 1 Wind        FROM WeatherLogs WHERE ZoneID=z.ZoneID ORDER BY RecordedAt DESC) AS Wind,"
-                    + "  (SELECT TOP 1 RecordedAt  FROM WeatherLogs WHERE ZoneID=z.ZoneID ORDER BY RecordedAt DESC) AS UpdatedAt "
+                    + "  (SELECT Temperature FROM WeatherLogs WHERE ZoneID=z.ZoneID ORDER BY RecordedAt DESC LIMIT 1) AS Temp,"
+                    + "  (SELECT Humidity    FROM WeatherLogs WHERE ZoneID=z.ZoneID ORDER BY RecordedAt DESC LIMIT 1) AS Humid,"
+                    + "  (SELECT Rainfall    FROM WeatherLogs WHERE ZoneID=z.ZoneID ORDER BY RecordedAt DESC LIMIT 1) AS Rain,"
+                    + "  (SELECT Wind        FROM WeatherLogs WHERE ZoneID=z.ZoneID ORDER BY RecordedAt DESC LIMIT 1) AS Wind,"
+                    + "  (SELECT RecordedAt  FROM WeatherLogs WHERE ZoneID=z.ZoneID ORDER BY RecordedAt DESC LIMIT 1) AS UpdatedAt "
                     + "FROM Zones z "
                     + "LEFT JOIN Cities c ON z.CityID = c.CityID "
                     + "ORDER BY z.ZoneID")

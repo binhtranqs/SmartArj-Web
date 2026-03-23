@@ -175,8 +175,8 @@ public class AlertService {
      * Returns: [Temperature, Humidity, RecordedAt] or null
      */
     private Object[] getLatestWeatherRow(EntityManager em, int zoneId) {
-        String sql = "SELECT TOP 1 Temperature, Humidity, RecordedAt " +
-                "FROM WeatherLogs WHERE ZoneID = ? ORDER BY RecordedAt DESC";
+        String sql = "SELECT Temperature, Humidity, RecordedAt " +
+                "FROM WeatherLogs WHERE ZoneID = ? ORDER BY RecordedAt DESC LIMIT 1";
 
         Query q = em.createNativeQuery(sql);
         q.setParameter(1, zoneId);
@@ -208,9 +208,9 @@ public class AlertService {
     private List<DailyRow> getDailyHistory(EntityManager em, int zoneId, int lookbackDays) {
         String sql = "SELECT CAST(RecordedAt AS date) AS d, " +
                 "MAX(Temperature) AS tmax, " +
-                "SUM(ISNULL(Rainfall,0)) AS rain " +
+                "SUM(COALESCE(Rainfall,0)) AS rain " +
                 "FROM WeatherLogs " +
-                "WHERE ZoneID = ? AND RecordedAt >= DATEADD(day, -?, GETDATE()) " +
+                "WHERE ZoneID = ? AND RecordedAt >= (CURRENT_TIMESTAMP - (? * INTERVAL '1 day')) " +
                 "GROUP BY CAST(RecordedAt AS date) " +
                 "ORDER BY d";
 
@@ -241,8 +241,8 @@ public class AlertService {
         String sql = "SELECT ForecastDate, Temperature " +
                 "FROM Forecasts " +
                 "WHERE ZoneID = ? " +
-                "AND ForecastDate >= CAST(GETDATE() AS date) " +
-                "AND ForecastDate <= DATEADD(day, ?, CAST(GETDATE() AS date)) " +
+                "AND ForecastDate >= CURRENT_DATE " +
+                "AND ForecastDate <= CURRENT_DATE + (? * INTERVAL '1 day') " +
                 "ORDER BY ForecastDate";
 
         Query q = em.createNativeQuery(sql);
@@ -288,7 +288,7 @@ public class AlertService {
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            String sql = "INSERT INTO Alerts (ZoneID, Message, AlertTime, IsRead) VALUES (?, ?, GETDATE(), 0)";
+            String sql = "INSERT INTO Alerts (ZoneID, Message, AlertTime, IsRead) VALUES (?, ?, CURRENT_TIMESTAMP, 0)";
             Query q = em.createNativeQuery(sql);
             q.setParameter(1, zoneId);
             q.setParameter(2, fullMessage);
@@ -308,7 +308,7 @@ public class AlertService {
      * Kiểm tra xem ngày HÔM NAY đã có alert với dedupKey này chưa.
      * "Hôm nay" = từ 00:00:00 server time đến hiện tại (calendar day).
      *
-     * Sử dụng SQL Server idiom: DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0)
+     * Sử dụng SQL Server idiom: DATEADD(day, DATEDIFF(day, 0, CURRENT_TIMESTAMP), 0)
      * = start of today (midnight) theo server timezone.
      *
      * LIKE pattern được escape để tránh SQL Server interpret [ ] % _ đặc biệt.
@@ -321,7 +321,7 @@ public class AlertService {
         String sql = "SELECT COUNT(*) FROM Alerts " +
                 "WHERE ZoneID = ? " +
                 "AND Message LIKE ? ESCAPE '\\' " +
-                "AND AlertTime >= DATEADD(day, DATEDIFF(day, 0, GETDATE()), 0)";
+                "AND AlertTime >= CURRENT_DATE";
 
         Query q = em.createNativeQuery(sql);
         q.setParameter(1, zoneId);

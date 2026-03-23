@@ -31,9 +31,9 @@ public class ForecastDAO {
                     "USING (SELECT ? AS ZoneID, ? AS ForecastDate) AS src " +
                     "ON (target.ZoneID = src.ZoneID AND target.ForecastDate = src.ForecastDate) " +
                     "WHEN MATCHED THEN " +
-                    "  UPDATE SET Temperature = ?, CreatedAt = GETDATE() " +
+                    "  UPDATE SET Temperature = ?, CreatedAt = CURRENT_TIMESTAMP " +
                     "WHEN NOT MATCHED THEN " +
-                    "  INSERT (ZoneID, ForecastDate, Temperature, CreatedAt) VALUES (?, ?, ?, GETDATE());";
+                    "  INSERT (ZoneID, ForecastDate, Temperature, CreatedAt) VALUES (?, ?, ?, CURRENT_TIMESTAMP);";
 
             Query q = em.createNativeQuery(sql);
             q.setParameter(1, zoneId);
@@ -61,7 +61,7 @@ public class ForecastDAO {
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            String sql = "DELETE FROM Forecasts WHERE ForecastDate < DATEADD(day, -?, CAST(GETDATE() AS date))";
+            String sql = "DELETE FROM Forecasts WHERE ForecastDate < CURRENT_DATE - (? * INTERVAL '1 day')";
             Query q = em.createNativeQuery(sql);
             q.setParameter(1, days);
             int n = q.executeUpdate();
