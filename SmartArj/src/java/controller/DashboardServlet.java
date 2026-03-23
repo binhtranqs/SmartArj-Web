@@ -23,9 +23,9 @@ public class DashboardServlet extends HttpServlet {
         try {
             // Lấy record mới nhất
             List<Object[]> rows = em.createNativeQuery(
-                    "SELECT Temperature, Humidity, Rainfall, Wind, RecordedAt FROM WeatherLogs  LIMIT 1" +
-                            (user != null && user.getCityId() != null ? "" : "") +
-                            "ORDER BY RecordedAt DESC")
+                    "SELECT Temperature, Humidity, Rainfall, Wind, RecordedAt FROM WeatherLogs " +
+                            (user != null && user.getCityId() != null ? "WHERE ZoneID IN (SELECT ZoneID FROM Zones WHERE CityID = " + user.getCityId() + ") " : "") +
+                            "ORDER BY RecordedAt DESC LIMIT 1")
                     .getResultList();
 
             if (!rows.isEmpty()) {
