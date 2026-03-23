@@ -151,7 +151,7 @@ public class MarketChatDAO {
      * Đánh dấu đã đọc scoped by listing
      */
     public void markRead(int receiverId, int senderId, int listingId) {
-        String sql = "UPDATE MarketChatMessages SET IsRead=1 WHERE ReceiverID=? AND SenderID=? AND ListingID=? AND IsRead=0";
+        String sql = "UPDATE MarketChatMessages SET IsRead=true WHERE ReceiverID=? AND SenderID=? AND ListingID=? AND IsRead=false";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, receiverId);
@@ -167,7 +167,7 @@ public class MarketChatDAO {
      * Đếm tin nhắn chưa đọc
      */
     public int countUnread(int userId) {
-        String sql = "SELECT COUNT(*) FROM MarketChatMessages WHERE ReceiverID=? AND IsRead=0";
+        String sql = "SELECT COUNT(*) FROM MarketChatMessages WHERE ReceiverID=? AND IsRead=false";
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, userId);

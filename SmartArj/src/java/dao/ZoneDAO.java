@@ -142,7 +142,7 @@ public class ZoneDAO {
                 "    c.CityName, \n" +
                 "    cr.CropName, cr.MinTemp, cr.MaxTemp,\n" +
                 "    w.Temperature, w.Humidity, w.Wind, w.Rainfall, w.RecordedAt, \n" +
-                "    (SELECT COUNT(*) FROM Alerts a WHERE a.ZoneID = z.ZoneID AND a.IsRead = 0) as AlertCount\n" +
+                "    (SELECT COUNT(*) FROM Alerts a WHERE a.ZoneID = z.ZoneID AND a.IsRead = false) as AlertCount\n" +
                 "FROM Zones z\n" +
                 "LEFT JOIN Cities c ON z.CityID = c.CityID\n" +
                 "LEFT JOIN LATERAL (SELECT cc.CropName, cc.MinTemp, cc.MaxTemp FROM ZoneCrops zc JOIN CropCatalog cc ON zc.CropCatalogID = cc.CropCatalogID WHERE zc.ZoneID = z.ZoneID ORDER BY zc.CreatedAt DESC LIMIT 1) cr ON true\n"
@@ -263,7 +263,7 @@ public class ZoneDAO {
                 "    c.CityName, \n" +
                 "    cr.CropName, cr.MinTemp, cr.MaxTemp,\n" +
                 "    w.Temperature, w.Humidity, w.Wind, w.Rainfall, w.RecordedAt, \n" +
-                "    (SELECT COUNT(*) FROM Alerts a WHERE a.ZoneID = z.ZoneID AND a.IsRead = 0) as AlertCount\n" +
+                "    (SELECT COUNT(*) FROM Alerts a WHERE a.ZoneID = z.ZoneID AND a.IsRead = false) as AlertCount\n" +
                 "FROM Zones z\n" +
                 "LEFT JOIN Cities c ON z.CityID = c.CityID\n" +
                 "LEFT JOIN LATERAL (SELECT cc.CropName, cc.MinTemp, cc.MaxTemp FROM ZoneCrops zc JOIN CropCatalog cc ON zc.CropCatalogID = cc.CropCatalogID WHERE zc.ZoneID = z.ZoneID ORDER BY zc.CreatedAt DESC LIMIT 1) cr ON true\n"
