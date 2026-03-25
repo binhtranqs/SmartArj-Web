@@ -186,7 +186,7 @@ def get_actionable_insight(target: str, predictions: list, thresholds: Threshold
 # ==========================================
 def _get_zone_id(cursor, city_id: int) -> int:
     cursor.execute(
-        "SELECT ZoneID FROM Zones WHERE CityID = %s ORDER BY ZoneID LIMIT 1", (city_id,)
+        "SELECT zoneid FROM zones WHERE cityid = %s ORDER BY zoneid LIMIT 1", (city_id,)
     )
     row = cursor.fetchone()
     return row[0] if row else 1
@@ -215,7 +215,7 @@ def save_forecasts_to_db(city_name: str, target: str, forecast: list) -> dict:
 
             # Kiểm tra record đã tồn tại chưa
             cursor.execute(
-                "SELECT ForecastID FROM Forecasts WHERE CityID = %s AND ForecastDate = %s",
+                "SELECT forecastid FROM forecasts WHERE cityid = %s AND forecastdate = %s",
                 (city_id, date)
             )
             existing = cursor.fetchone()
@@ -223,12 +223,12 @@ def save_forecasts_to_db(city_name: str, target: str, forecast: list) -> dict:
             if existing:
                 if target == "Temperature":
                     cursor.execute(
-                        "UPDATE Forecasts SET Temperature = %s, CreatedAt = NOW() WHERE ForecastID = %s",
+                        "UPDATE forecasts SET temperature = %s, createdat = NOW() WHERE forecastid = %s",
                         (value, existing[0])
                     )
                 else:
                     cursor.execute(
-                        "UPDATE Forecasts SET Humidity = %s, CreatedAt = NOW() WHERE ForecastID = %s",
+                        "UPDATE forecasts SET humidity = %s, createdat = NOW() WHERE forecastid = %s",
                         (value, existing[0])
                     )
                 updated += 1
@@ -236,7 +236,7 @@ def save_forecasts_to_db(city_name: str, target: str, forecast: list) -> dict:
                 temp_val = value if target == "Temperature" else None
                 rh_val   = value if target == "Humidity"    else None
                 cursor.execute(
-                    "INSERT INTO Forecasts (ZoneID, ForecastDate, Temperature, CityID, Humidity, CreatedAt) "
+                    "INSERT INTO forecasts (zoneid, forecastdate, temperature, cityid, humidity, createdat) "
                     "VALUES (%s, %s, %s, %s, %s, NOW())",
                     (zone_id, date, temp_val, city_id, rh_val)
                 )
