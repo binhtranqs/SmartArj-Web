@@ -9,8 +9,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy entire AI_Engine (app.py, outputs/, etc.)
 COPY . .
 
-# Expose FastAPI port
-EXPOSE 8001
-
-# Run FastAPI via uvicorn
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8001"]
+# Render assigns $PORT dynamically (default 10000)
+# Use shell form to allow env var expansion
+CMD uvicorn app:app --host 0.0.0.0 --port ${PORT:-8001}
