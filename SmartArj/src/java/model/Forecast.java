@@ -25,6 +25,12 @@ public class Forecast {
     @Column(name = "Temperature")
     private Double temperature;
 
+    @Column(name = "Humidity")
+    private Double humidity;
+
+    @Column(name = "CityID")
+    private Integer cityId;
+
     @Column(name = "CreatedAt")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
@@ -40,6 +46,12 @@ public class Forecast {
 
     public Double getTemperature() { return temperature; }
     public void setTemperature(Double temperature) { this.temperature = temperature; }
+
+    public Double getHumidity() { return humidity; }
+    public void setHumidity(Double humidity) { this.humidity = humidity; }
+
+    public Integer getCityId() { return cityId; }
+    public void setCityId(Integer cityId) { this.cityId = cityId; }
 
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
