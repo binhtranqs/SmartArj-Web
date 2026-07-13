@@ -1,12 +1,25 @@
-/build/
-/dist/
-/target/
-
-nbproject/private/
-nbbuild/
-nbdist/
-
-*.log
-*.class
+# macOS
 .DS_Store
-.env
+
+# NetBeans user-specific files
+nbproject/private/
+
+# Build output
+build/
+dist/
+*.war
+*.class
+
+# Logs and temp files
+*.log
+tmp/
+temp/
+
+# Local dependency folders
+lib/
+*.jar
+
+# IDE metadata
+.idea/
+.vscode/
+
